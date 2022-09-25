@@ -157,3 +157,256 @@ fun main() {
 오리 클래스는 각 인터페이스를 구현한 구체적인 클래스에 대해 살필 필요가 없이, 각 인터페이스를 상속한 객체들을 사용하는 방식으로 구성(composition)을 이용한다.
 즉 인터페이스를 사용함으로써 오리 클래스가 특정 행동을 구현한 구체 클래스에 의존하지 않고, 상위 형식에 맞춰 프로그래밍을 하므로 실행 시에 구현체를 동적을 변경할 수 있다.
 > 상속보다 구성을 활용하면 구성요소를 사용하는 객체에선 올바른 행동 인터페이스를 구현하기만 하면 실행 시에 행동을 바꿀 수도 있다.
+
+## chap2. 객체들에게 연락 돌리기 (옵저버 패턴)
+옵저버 패턴의 예로 신문사 + 구독자를 생각할 수 있다.
+독자가 신문사를 구독하게 되면, 독자는 구독을 해지하기 전까지 신문을 계속 받을 수 있다.
+즉 신문사라는 주제(subject)를 observer 인 구독자가 구독(subscribe)하고 있다.
+
+- 주제(A)에선 중요한 데이터를 관리한다.
+- B 객체가 주제(A)를 구독하고 싶을 경우, 본인을 A 주제에 대한 옵저버 집합에 등록한다.  
+- A 주제 데이터가 바뀌면 A를 구독하고 있는 옵저버들(B 포함)에게 해당 소식과 새 데이터가 전해진다.
+  - A 주제의 옵저버는 A 주제를 구독하고 있으며, A 주제의 데이터가 바뀌면 갱신 데이터 내용을 전달받는다.
+- B 객체가 A 구독을 해지할 경우, 본인을 A 주제에 대한 옵저버 집합에서 제거한다.
+
+> 옵저버 패턴은 한 객체의 상태가 바뀌면, 그 객체에 의존하는 다른 객체들에게 연락이 가고
+자동으로 내용이 갱신되는 방식으로 일대다 의존성을 말한다
+
+옵저버 패턴에서는 주제(subject)가 객체의 상태를 저장하고 제어한다.
+옵저버는 상태를 사용하지만 소유할 필요가 없으니 주제(subject)에 의존적인 성질을 갖게 된다.
+그러므로 주제와 옵저버가 일대다 의존성을 갖게 된다.
+
+### 옵저버 패턴의 구조
+<img src= "img/observer_patttern.png" width="500">
+
+신규 옵저버가 생길 경우 옵저버 인터페이스를 구현하여 새로운 옵저버를 추가를 할 수 있어, 주제와 옵저버는 **느슨하게 결합**되어 있다.
+
+느슨하게 결합하는 디자인을 사용하면 변경사항이 생겨도 무난히 처리할 수 있는 유연한 객체지향 시스템을 구축할 수 있다.
+즉 주제는 옵저버가 특정 인터페이스를 구현한다는 사실만 알고, 옵저버의 구체 클레스가 무엇인지와 옵저버에서 무슨 일을 하는지 알 필요가 없게 된다.
+
+#### 옵저버를 사용한 예제 상황
+기상 스테이션으로부터 온도, 습도, 기압이 변경될 때마다 각각의 3개 화면에 정보들을 다르게 조합한 정보를 보여줘야 하는 경우,
+옵저버 패턴을 이용해서 구현할 수 있다.
+각각의 화면이 기상 스테이션의 정보를 구독하여, 기상 스테이션이 보유한 기상 정보가 업데이트될 경우 옵저버인 화면이 담고 있는 기상 정보 또한 함께 변경되도록 하는 예제 코드는 아래와 같다. 
+
+```kotlin
+// 주제 인터페이스
+interface Subject {
+  // 옵저버를 담고 있는 리스트
+  val observers: MutableList<Observer>
+
+  // 옵저버 집합에 신규 옵저버 등록 (구독 신청)
+  fun registerObserver(observer: Observer) {
+    observers.add(observer)
+  }
+  // 옵저버 집합에서 옵저버 제거 (구독 해제)
+  fun removeObserver(observer: Observer) {
+    observers.remove(observer)
+  }
+  // 옵저버 집합에 존재하는 옵저버들에게 정보가 변경되었다는 사실을 알림
+  fun notifyObservers()
+}
+
+interface Observer {
+  // 구독한 정보가 변경될 경우, 호출되는 메서드
+  fun update(tmp: Float, humidity: Float, pressure: Float)
+}
+
+// 온도, 습도, 기압 등의 기상 정보 주제를 저장하는 객체
+class WeatherData : Subject {
+  override val observers: MutableList<Observer> = mutableListOf()
+  private var temperature: Float = 0F
+  private var humidity: Float = 0F
+  private var pressure: Float = 0F
+
+  override fun notifyObservers() {
+    observers.forEach {
+      it.update(temperature, humidity, pressure)
+    }
+  }
+  
+  // 기상 정보가 변경된 경우, 기상 정보를 변경한 후 옵저버들에게 이를 알림
+  fun measurementsChanged(tmp: Float, humidity: Float, pressure: Float) {
+    this.temperature = tmp
+    this.humidity = humidity
+    this.pressure = pressure
+    notifyObservers()
+  }
+}
+```
+```kotlin
+// 화면 디스플레이 관련 인터페이스 
+interface DisplayElement {
+  fun display()
+}
+
+// 온도, 습도, 기압 등의 기상 정보 주제를 구독하는 옵저버 1
+class CurrentConditionsDisplay(private val weatherData: WeatherData) : Observer, DisplayElement {
+  private var temperature: Float = 0F
+  private var humidity: Float = 0F
+
+  init {
+    // 기상 정보 주제에 본인을 옵저버로 등록
+    weatherData.registerObserver(this)
+  }
+
+  // 주제로 부터 정보가 바뀌었다는 알림을 받을 경우 display 메서드를 호출해 변경된 정보를 출력함
+  override fun update(tmp: Float, humidity: Float, pressure: Float) {
+    this.temperature = tmp
+    this.humidity = humidity
+    display()
+  }
+
+  override fun display() {
+    println("햔재 상태: 온도 = $temperature F, 습도: $humidity %")
+  }
+}
+
+// 온도, 습도, 기압 등의 기상 정보 주제를 구독하는 옵저버 2
+class CurrentPressureDisplay(private val weatherData: WeatherData) : Observer, DisplayElement {
+  private var pressure: Float = 0F
+
+  init {
+    weatherData.registerObserver(this)
+  }
+
+  override fun update(tmp: Float, humidity: Float, pressure: Float) {
+    this.pressure = pressure
+    display()
+  }
+
+  override fun display() {
+    println("햔재 기압: $pressure")
+  }
+}
+
+fun main() {
+  val weatherData = WeatherData()
+  val conditionsDisplay = CurrentConditionsDisplay(weatherData)
+  val pressureDisplay = CurrentPressureDisplay(weatherData)
+
+  // 기상 정보를 구독하고 있는 2개의 디스플레이에서 정보 변경된 것이 출력된다
+  // 햔재 상태: 온도 = 80.0 F, 습도: 65.0 %
+  // 햔재 기압: 30.4
+  weatherData.measurementsChanged(80f, 65f, 30.4f)
+
+  // pressureDisplay 가 기상 정보 구독을 해제함
+  weatherData.removeObserver(pressureDisplay)
+  // 기상 정보를 구독하고 있는 1개의 디스플레이에서만(conditionsDisplay) 정보 변경된 것이 출력된다
+  // 햔재 상태: 온도 = 20.0 F, 습도: 65.0 %
+  weatherData.measurementsChanged(20f, 65f, 30.4f)
+}
+
+```
+위 방식은 주제가 옵저버에게 **주제와 함께 정보를 보내는 푸시 방식**으로 알림을 보내고 있다.
+즉 아래와 같이 주제가 변경될 때, 변경된 모든 정보(기온, 습도, 기압)을 옵저버에게 바로 보내고 있다.
+```
+it.update(temperature, humidity, pressure)
+```
+푸시 방식의 경우, 모든 정보를 함께 보내므로 CurrentPressureDisplay 객체의 경우 필요하지 않은 기온, 습도 정보도 함께 받게 된다. 
+
+따라서 푸시 방식이 아닌, 옵저버에서는 정보가 변경되었다는 알림만 받고 
+알림을 받은 옵저버가 주제로 부터 상태를 끌어오는 풀 방식으로도 구현할 수 있다.
+즉 옵저버가 변경되었다는 이벤트를 받을 경우, 필요한 정보를 기상 스테이션에 요청해서 받아오는 방식이다.
+```kotlin
+interface Subject {
+    val observers: MutableList<Observer>
+
+    fun registerObserver(o: Observer) {
+        observers.add(o)
+    }
+
+    fun removeObserver(o: Observer) {
+        observers.remove(o)
+    }
+    
+    fun notifyObservers() {
+        observers.forEach {
+            it.update()
+        }
+    }
+}
+
+interface Observer {
+   // 옵저버는 정보가 변경되었다는 알림만 받게 된다.
+    fun update()
+}
+
+class WeatherData : Subject {
+    override val observers: MutableList<Observer> = mutableListOf()
+
+    var temperature: Float = 0F
+    var humidity: Float = 0F
+    var pressure: Float = 0F
+
+    fun measurementsChanged(tmp: Float, humidity: Float, pressure: Float) {
+        this.temperature = tmp
+        this.humidity = humidity
+        this.pressure = pressure
+        notifyObservers()
+    }
+}
+```
+
+```kotlin
+interface DisplayElement {
+    fun display()
+}
+
+class CurrentConditionsDisplay(private val weatherData: WeatherData) : Observer, DisplayElement {
+    private var temperature: Float = 0F
+    private var humidity: Float = 0F
+
+    init {
+        weatherData.registerObserver(this)
+    }
+  
+    override fun update() {
+        // 기상 정보가 업데이트 된 경우, 직접 필요한 정보(기온, 습도)만 받아온다 (pull 방식)  
+        this.temperature = weatherData.temperature
+        this.humidity = weatherData.humidity
+        display()
+    }
+
+    override fun display() {
+        println("햔재 상태: 온도 = $temperature F, 습도: $humidity %")
+    }
+}
+
+class CurrentPressureDisplay(private val weatherData: WeatherData) : Observer, DisplayElement {
+    private var pressure: Float = 0F
+
+    init {
+        weatherData.registerObserver(this)
+    }
+
+    override fun update() {
+        this.pressure = weatherData.pressure
+        display()
+    }
+
+    override fun display() {
+        println("햔재 기압: $pressure")
+    }
+}
+
+fun main() {
+  val weatherData = WeatherData()
+  val conditionsDisplay = CurrentConditionsDisplay(weatherData)
+  val pressureDisplay = CurrentPressureDisplay(weatherData)
+
+  // 기상 정보를 구독하고 있는 2개의 디스플레이에서 정보 변경된 것이 출력된다
+  // 햔재 상태: 온도 = 80.0 F, 습도: 65.0 %
+  // 햔재 기압: 30.4
+  weatherData.measurementsChanged(80f, 65f, 30.4f)
+
+  // 기상 정보를 구독하고 있는 1개의 디스플레이에서만(pressureDisplay) 정보 변경된 것이 출력된다
+  weatherData.removeObserver(conditionsDisplay)
+  weatherData.measurementsChanged(20f, 65f, 30.4f)
+  // 햔재 기압: 30.4
+}
+```
+
+- Reference
+  - 헤드 퍼스트 디자인 패턴 도서
+  - https://refactoring.guru
