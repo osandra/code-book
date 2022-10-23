@@ -15,4 +15,9 @@ class Member(
     @Column(nullable = false)
     var email: String = email
         protected set
+
+    fun update(name: String, email: String) {
+        this.name = name
+        this.email = email
+    }
 }
