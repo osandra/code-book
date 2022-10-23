@@ -2,5 +2,6 @@ rootProject.name = "code-book"
 
 include(
     "book",
-    "api"
+    "api",
+    "domain"
 )

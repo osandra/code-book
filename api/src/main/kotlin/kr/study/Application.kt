@@ -1,4 +1,4 @@
-package study
+package kr.study
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

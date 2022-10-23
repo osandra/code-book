@@ -7,6 +7,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
 	kotlin("jvm") version kotlinVersion
 	kotlin("plugin.spring") version kotlinVersion
+	kotlin("plugin.jpa") version kotlinVersion
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_17
@@ -25,6 +26,7 @@ subprojects {
 	apply(plugin = "io.spring.dependency-management")
 	apply(plugin = "org.jetbrains.kotlin.jvm")
 	apply(plugin = "org.jetbrains.kotlin.plugin.spring")
+	apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
 
 	dependencies {
 		implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
