@@ -1,0 +1,18 @@
+= API Docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+[[introduction]]
+== 소개
+API 문서 입니다.
+
+== 멤버
+=== 멤버 조회
+operation::members/GetMember[snippets='http-request,path-parameters,http-response,response-fields']
+
+=== 멤버 생성
+operation::members/CreateMember[snippets='http-request,http-response,response-fields']

@@ -3,6 +3,7 @@ package kr.study.controller
 import kr.study.service.MemberService
 import kr.study.service.dto.MemberDto
 import kr.study.service.dto.MemberInfoDto
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,5 +22,10 @@ class MemberController(
     @PatchMapping("/members/{id}")
     fun update(@PathVariable id: Int, @RequestBody memberInfoDto: MemberInfoDto) {
         memberService.update(id, memberInfoDto)
+    }
+
+    @GetMapping("/members/{id}")
+    fun getMember(@PathVariable id: Int): MemberDto {
+        return memberService.getMember(id)
     }
 }

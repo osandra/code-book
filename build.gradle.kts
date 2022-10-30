@@ -44,4 +44,12 @@ subprojects {
 	tasks.withType<Test> {
 		useJUnitPlatform()
 	}
+
+	tasks.getByName("bootJar") {
+		enabled = false
+	}
+
+	tasks.getByName("jar") {
+		enabled = true
+	}
 }

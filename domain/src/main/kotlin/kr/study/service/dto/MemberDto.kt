@@ -2,7 +2,7 @@ package kr.study.service.dto
 
 import kr.study.model.Member
 
-class MemberDto private constructor(
+class MemberDto(
     val id: Int,
     val email: String,
     val name: String

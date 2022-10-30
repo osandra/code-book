@@ -26,4 +26,9 @@ class MemberService(
         val member = memberRepository.findByIdOrNull(id) ?: throw RuntimeException("해당하는 회원이 없습니다")
         member.update(name = memberInfoDto.name, email = memberInfoDto.email)
     }
+
+    fun getMember(id: Int): MemberDto {
+        val member = memberRepository.findByIdOrNull(id) ?: throw RuntimeException("해당하는 회원이 없습니다")
+        return MemberDto.of(member)
+    }
 }
