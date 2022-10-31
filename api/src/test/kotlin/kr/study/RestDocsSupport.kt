@@ -9,6 +9,8 @@ import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.operation.preprocess.Preprocessors
+import org.springframework.restdocs.payload.FieldDescriptor
+import org.springframework.restdocs.payload.PayloadDocumentation
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
@@ -19,7 +21,7 @@ import org.springframework.web.filter.CharacterEncodingFilter
 @AutoConfigureRestDocs
 @AutoConfigureMockMvc
 @ExtendWith(RestDocumentationExtension::class)
-open class RestDocsSupport {
+abstract class RestDocsSupport {
     @Autowired
     protected lateinit var mockMvc: MockMvc
 
@@ -38,4 +40,13 @@ open class RestDocsSupport {
             .addFilters<DefaultMockMvcBuilder>(CharacterEncodingFilter("UTF-8", true))
             .build()
     }
+
+    protected fun fieldWithEnumValue(pathValue: String, values: String): FieldDescriptor {
+        return PayloadDocumentation.fieldWithPath(pathValue).description(values)
+    }
+}
+
+
+inline fun <reified T: Enum<T>> getEnumValues(): String {
+    return T::class.java.enumConstants.joinToString(", ")
 }

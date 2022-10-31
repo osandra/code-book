@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kr.study.RestDocsSupport
+import kr.study.getEnumValues
+import kr.study.model.Status
 import kr.study.service.MemberService
 import kr.study.service.dto.MemberDto
 import kr.study.service.dto.MemberInfoDto
@@ -36,7 +38,8 @@ class MemberControllerDocumentTest: RestDocsSupport() {
         val givenMember = MemberDto(
             id = 1,
             email = "test@gmail.com",
-            name = "givenName"
+            name = "givenName",
+            status = Status.ACTIVE
         )
 
         Mockito.`when`(memberService.getMember(givenMember.id))
@@ -56,7 +59,8 @@ class MemberControllerDocumentTest: RestDocsSupport() {
                     ), responseFields(
                         fieldWithPath("id").type(JsonFieldType.NUMBER).description("멤버 아이디"),
                         fieldWithPath("email").type(JsonFieldType.STRING).description("멤버 이메일"),
-                        fieldWithPath("name").type(JsonFieldType.STRING).description("멤버 이름")
+                        fieldWithPath("name").type(JsonFieldType.STRING).description("멤버 이름"),
+                        fieldWithEnumValue("status", getEnumValues<Status>())
                     )
                 )
             )
@@ -73,7 +77,8 @@ class MemberControllerDocumentTest: RestDocsSupport() {
         val givenMember = MemberDto(
             id = 1,
             email = givenMemberInfo.email,
-            name = givenMemberInfo.name
+            name = givenMemberInfo.name,
+            status = Status.ACTIVE
         )
 
         Mockito.`when`(memberService.create(givenMemberInfo))
@@ -97,7 +102,8 @@ class MemberControllerDocumentTest: RestDocsSupport() {
                         responseFields(
                             fieldWithPath("id").type(JsonFieldType.NUMBER).description("멤버 아이디"),
                             fieldWithPath("email").type(JsonFieldType.STRING).description("멤버 이메일"),
-                            fieldWithPath("name").type(JsonFieldType.STRING).description("멤버 이름")
+                            fieldWithPath("name").type(JsonFieldType.STRING).description("멤버 이름"),
+                            fieldWithEnumValue("status", getEnumValues<Status>())
                         )
                     )
                 )
